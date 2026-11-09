@@ -1,0 +1,21 @@
+# Gradle
+.gradle/
+build/
+
+# 本地构建工具（Gradle 发行包等，不需要提交）
+.tools/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.vscode/
+
+# 本地工作区数据 / 日志
+.workbuddy/
+.workbuddy-ai/
+*.log
+.DS_Store
+Thumbs.db
