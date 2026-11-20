@@ -14,17 +14,18 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.nio.file.Path;
 
 /**
- * EscUI 主类。
+ * Main plugin class.
  *
- * <p>「菜单页」是在引导阶段注册好的（见 {@link EscUIBootstrap}），ESC 菜单里
- * 「服务器链接」按钮点开就是它。运行期这里做两件事：</p>
+ * <p>The menu dialog is registered during bootstrap (see {@link EscUIBootstrap}).
+ * At runtime this class does two things:</p>
  * <ol>
- *   <li>启动时做一次「运行期构建对话框」自检；</li>
- *   <li>处理「服务器规则」条目的点击：<b>重新读一次 menu.yml 的 rules 段</b>，
- *       现场构建规则文本对话框再显示 —— 所以改 rules 配置不用重启服务端。</li>
+ *   <li>a one-off sanity check that dialogs can be built outside bootstrap;</li>
+ *   <li>handle clicks on a show-rules entry by re-reading menu.yml and building
+ *       the rules dialog on the spot — so text edits take effect without a restart.</li>
  * </ol>
  *
- * <p>注意：菜单页本身的条目增减/改名是启动时注册的，那类改动要重启服务端。</p>
+ * <p>Menu entries themselves are baked in at startup; adding, removing or
+ * renaming them still needs a restart.</p>
  */
 public final class EscUIPlugin extends JavaPlugin implements Listener {
 
@@ -32,30 +33,29 @@ public final class EscUIPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
 
-        // 运行期自检：确认这个阶段能构建对话框（引导阶段注册的不算）
+        // Sanity check: the bootstrap-phase registration doesn't prove this works.
         try {
             Path dir = getDataFolder().toPath();
             RulesDefinition rules = MenuConfig.load(dir, getLogger()::warning).rules();
             if (rules != null) {
                 DialogBuilder.buildRulesDialog(rules);
-                getLogger().info("运行期构建规则对话框自检通过（共 " + rules.lines().size() + " 行）。");
+                getLogger().info("Runtime rules dialog check passed (" + rules.lines().size() + " lines).");
             }
         } catch (Throwable ex) {
-            getLogger().warning("运行期构建对话框自检失败：" + ex);
+            getLogger().warning("Runtime dialog check failed: " + ex);
         }
 
-        getLogger().info("EscUI 已启用。菜单条目改动需要重启服务端。");
+        getLogger().info("EscUI enabled. Menu entry changes require a server restart.");
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("EscUI 已卸载。");
+        getLogger().info("EscUI disabled.");
     }
 
     /**
-     * 处理菜单里「服务器规则」条目的点击。
-     *
-     * <p>其它动作（开网址）都是客户端自己完成的，不会走到这里。</p>
+     * Handles clicks on the rules entry. URL entries never reach this method —
+     * the client performs those itself.
      */
     @EventHandler
     public void onCustomClick(PlayerCustomClickEvent event) {
@@ -69,7 +69,7 @@ public final class EscUIPlugin extends JavaPlugin implements Listener {
         }
         String page = value.substring(DialogBuilder.OPEN_PREFIX.length());
         if (!"rules".equals(page)) {
-            getLogger().warning("点击要打开的页面「" + page + "」不存在，请检查 menu.yml");
+            getLogger().warning("Unknown page in click key: " + page + ". Check menu.yml.");
             return;
         }
 
@@ -78,11 +78,11 @@ public final class EscUIPlugin extends JavaPlugin implements Listener {
         }
         Player player = connection.getPlayer();
 
-        // 每次都重新读配置：这样改完 rules 段直接就能生效，不用重启服务端
+        // Re-read every time so rules edits are live.
         MenuConfig config = MenuConfig.load(getDataFolder().toPath(), getLogger()::warning);
         RulesDefinition rules = config.rules();
         if (rules == null) {
-            getLogger().warning("menu.yml 里没有 rules 段，打不开服务器规则。");
+            getLogger().warning("No rules section in menu.yml; cannot open the rules page.");
             return;
         }
 
@@ -90,7 +90,7 @@ public final class EscUIPlugin extends JavaPlugin implements Listener {
             Dialog dialog = DialogBuilder.buildRulesDialog(rules);
             player.showDialog(dialog);
         } catch (Throwable ex) {
-            getLogger().warning("打开服务器规则失败：" + ex);
+            getLogger().warning("Failed to open rules: " + ex);
         }
     }
 }

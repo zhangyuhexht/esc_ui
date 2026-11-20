@@ -1,9 +1,9 @@
-# Paper 插件描述文件
+# Paper plugin descriptor
 name: EscUI
 version: '${version}'
 main: com.example.escui.EscUIPlugin
-# 引导类：在服务端启动早期注册「服务器链接」菜单页，并挂按钮到 ESC 菜单
+# Registers the menu dialog early and attaches the button to the ESC menu
 bootstrapper: com.example.escui.EscUIBootstrap
-# 目标 API 版本：和服务端游戏版本 26.2 对应
+# Target API version, matches the 26.2 game version
 api-version: '26.2'
-description: ESC 菜单「服务器链接」：网址按钮 + 游戏内服务器规则文本
+description: ESC menu server links with URL buttons and in-game rules text

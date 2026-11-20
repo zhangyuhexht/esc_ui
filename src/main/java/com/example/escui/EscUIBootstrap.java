@@ -15,20 +15,19 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * 插件引导类（bootstrapper）。
+ * Plugin bootstrapper.
  *
- * <p>它在服务端启动的「注册表构建」阶段跑，比普通插件更早，所以能往对话框注册表里塞东西、
- * 并往 ESC 菜单的标签上挂按钮。</p>
+ * <p>Runs during registry building, earlier than normal plugins, so it can put
+ * things in the dialog registry and attach a button to the ESC menu.</p>
  *
- * <p>这里只注册「菜单页」一个对话框：</p>
+ * <p>It registers exactly one dialog:</p>
  * <ol>
- *   <li>把 menu.yml 的 menu 段注册成对话框（按钮列表）；</li>
- *   <li>把它加进 {@code PAUSE_SCREEN_ADDITIONS} 标签 —— ESC 菜单里就会出现
- *       一个「服务器链接」按钮，点开就是这一页。</li>
+ *   <li>turn the {@code menu} section of menu.yml into a dialog;</li>
+ *   <li>add it to {@code PAUSE_SCREEN_ADDITIONS} so it shows up in the ESC menu.</li>
  * </ol>
  *
- * <p>「服务器规则」条目点开的内容不在这里注册 —— 它是玩家点击时由
- * {@link EscUIPlugin} 现场构建的（这样改 rules 配置不用重启服务端）。</p>
+ * <p>The rules page is not registered here. {@link EscUIPlugin} builds it when a
+ * player clicks, so changes to the rules text don't need a restart.</p>
  */
 public final class EscUIBootstrap implements PluginBootstrap {
 
@@ -39,11 +38,11 @@ public final class EscUIBootstrap implements PluginBootstrap {
 
         MenuDefinition menu = config.menu();
         if (menu == null) {
-            warn.accept("menu.yml 里没有可用的菜单条目，ESC 菜单里不会出现按钮。");
+            warn.accept("No usable menu entries in menu.yml; no ESC button will be added.");
             return;
         }
 
-        // ① 注册「菜单页」对话框
+        // 1. Register the menu dialog.
         context.getLifecycleManager().registerEventHandler(
                 RegistryEvents.DIALOG.compose().newHandler(event ->
                         event.registry().register(
@@ -53,7 +52,7 @@ public final class EscUIBootstrap implements PluginBootstrap {
                 )
         );
 
-        // ② 把它挂到 ESC 菜单上
+        // 2. Attach it to the ESC menu.
         context.getLifecycleManager().registerEventHandler(
                 LifecycleEvents.TAGS.preFlatten(RegistryKey.DIALOG).newHandler(event ->
                         event.registrar().addToTag(
@@ -63,7 +62,7 @@ public final class EscUIBootstrap implements PluginBootstrap {
                 )
         );
 
-        context.getLogger().info("EscUI：ESC 菜单按钮「" + menu.button() + "」已注册，点开共 "
-                + menu.entries().size() + " 个条目。");
+        context.getLogger().info("EscUI: ESC button '" + menu.button() + "' registered with "
+                + menu.entries().size() + " entries.");
     }
 }

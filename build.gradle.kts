@@ -2,30 +2,30 @@ plugins {
     java
 }
 
-// 基本信息：后续想改包名/版本，改这里即可
+// Group and version; the jar name follows version
 group = "com.example.escui"
 version = "2.0.0"
 
 repositories {
     mavenCentral()
-    // Paper 的仓库
+    // Paper
     maven("https://repo.papermc.io/repository/maven-public/")
-    // PlaceholderAPI（可选的软依赖，只在编译期用）
+    // PlaceholderAPI (compile-time only, currently unused)
     maven("https://repo.extendedclip.com/releases/")
 }
 
 dependencies {
-    // Paper API：服务端是 Paper 26.2（游戏版本 26.2），所以这里依赖 26.2 的 API。
-    // compileOnly 表示只在编译期用，不会被打进 jar（服务端本身已经有这些类）。
+    // Server runs Paper 26.2, so compile against that API.
+    // compileOnly keeps it out of the jar — the server already provides it.
     compileOnly("io.papermc.paper:paper-api:26.2.build.129-stable")
 
-    // PlaceholderAPI：软依赖，服务端装了就用、没装也不影响运行。
-    // 同样是 compileOnly，不会打进 jar。
+    // Declared as a soft dependency, but nothing uses it yet.
+    // Also compileOnly, so it isn't bundled.
     compileOnly("me.clip:placeholderapi:2.12.3")
 }
 
 java {
-    // 用 JDK 25 编译（对应 MC 26.x 的运行时）
+    // MC 26.x runs on Java 25
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(25))
     }
@@ -34,12 +34,12 @@ java {
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.release.set(25)
-    // 打开过时 API 提示，方便及时发现 Paper 标记为待删除的方法
+    // Surface deprecated Paper APIs while there's still time to react
     options.compilerArgs.add("-Xlint:deprecation")
 }
 
 tasks.processResources {
-    // 把 build.gradle.kts 里的 version 注入到 plugin.yml 的 ${version} 占位符
+    // Replace ${version} in paper-plugin.yml with the version above
     val props = mapOf("version" to version.toString())
     inputs.properties(props)
     filteringCharset = "UTF-8"
@@ -49,6 +49,6 @@ tasks.processResources {
 }
 
 tasks.jar {
-    // 生成的 jar 名字，例如 EscUI-1.0.0.jar
+    // Produces e.g. EscUI-2.0.0.jar
     archiveBaseName.set("EscUI")
 }

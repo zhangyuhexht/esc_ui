@@ -1,22 +1,19 @@
-# 更新日志
+# Changelog
 
-本项目版本号遵循插件自身的 `build.gradle.kts`（`version`），jar 文件名随版本变化。
+Version numbers come from `build.gradle.kts`; the jar is named after the version.
 
 ## 2.0.0 — 2026-11-01
 
-**当前版本。**
+Current release.
 
-- 菜单改为 **Dialog 对话框架构**：引导阶段注册一个「服务器链接」菜单页并挂到 ESC 菜单，点开是一页可配置的按钮列表。
-- 默认菜单收敛为 **5 个网页入口**：服务器官网、服务器文档、粘液科技信息、服务器规则、反馈/提议，全部指向 `zhangyuhexht.top`（含 SPA 哈希路由）。
-- 「服务器规则」由游戏内文本改为跳转网页，配置里的 `rules` 段移除；`show-rules` 显示游戏内文本的能力**保留在代码中**，需要时加回配置即可（文本热生效，改完不用重启）。
-- 删除原生 ServerLinks 相关代码，统一走 Dialog。
-- Paper 26.2 / 26.3 均验证通过：插件加载正常、5 个条目注册、无报错。
-- 仓库整理：移除可视化编辑器、规则网页等不再需要的内容；README、架构文档重写；`gradle.properties` 去掉本机硬编码 JDK 路径。
+Moved the menu to a single registered dialog. During bootstrap the plugin registers one menu dialog and adds it to the ESC menu; opening it shows five URL buttons pointing at `zhangyuhexht.top`.
 
-## 1.1.0 及更早 — 2026-10
+Rules used to be an in-game text dialog. They're a web page now, so the `rules` section was dropped from the default config. The `show-rules` code path is still in the plugin — add a `rules` section back and it works again, with edits taking effect on the next click.
 
-早期迭代阶段，架构多次调整（原生 ServerLinks 链接列表、Dialog 页面树与输入框、可视化编辑器、独立的规则 ESC 按钮等）。这些方案最终都被 2.0.0 的单一菜单页架构取代，相关代码与工具已从仓库移除，仅在设计决策与文档中留下痕迹。
+Also in this release: dropped the old ServerLinks code, verified against Paper 26.2 and 26.3, and cleaned up the repo (editor and rule-page artifacts removed, JDK path no longer hardcoded).
 
----
+## 1.1.0 and earlier — 2026-10
 
-完整设计背景见 [docs/项目总览与迭代指南.md](docs/项目总览与迭代指南.md)；各版本可下载 jar 见 [Releases](https://github.com/zhangyuhexht/esc_ui/releases)。
+A lot of false starts: native ServerLinks, a Dialog page tree with inputs, a bundled web editor, a separate rules button in the ESC menu. All of it was replaced by the single-dialog design in 2.0.0. The code is gone; the reasoning behind those choices is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+Downloads: [Releases](https://github.com/zhangyuhexht/esc_ui/releases).

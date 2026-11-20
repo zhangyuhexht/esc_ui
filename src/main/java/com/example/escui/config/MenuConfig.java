@@ -13,15 +13,15 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * menu.yml 的读取与解析。
+ * Reads menu.yml.
  *
- * <p>一个文件里两部分内容：</p>
+ * <p>The file has two sections:</p>
  * <ul>
- *   <li>{@code menu} —— ESC 菜单里「服务器链接」按钮点开后的那一页（按钮列表）；</li>
- *   <li>{@code rules} —— 「服务器规则」条目点开显示的文本。</li>
+ *   <li>{@code menu} — the button list behind the ESC button;</li>
+ *   <li>{@code rules} — text shown by a show-rules entry.</li>
  * </ul>
  *
- * <p>文件不存在时会从插件 jar 里释放一份默认的出来。</p>
+ * <p>If the file doesn't exist, a default copy is released from the jar.</p>
  */
 public final class MenuConfig {
 
@@ -38,11 +38,11 @@ public final class MenuConfig {
     }
 
     /**
-     * 读取配置。
+     * Loads the config.
      *
-     * @param dataDir 插件数据目录
-     * @param warn    出问题时往哪打警告
-     * @return 解析结果（即使失败也会返回一个对象，可能是空的）
+     * @param dataDir plugin data folder
+     * @param warn    where to send warnings
+     * @return parsed result; never null, but either field may be null
      */
     public static MenuConfig load(Path dataDir, Consumer<String> warn) {
         MenuDefinition menu = null;
@@ -61,21 +61,21 @@ public final class MenuConfig {
             menu = parseMenu(cfg, warn);
             rules = parseRules(cfg);
         } catch (Exception ex) {
-            warn.accept("读取 menu.yml 失败：" + ex.getMessage());
+            warn.accept("Failed to read menu.yml: " + ex.getMessage());
         }
         return new MenuConfig(menu, rules);
     }
 
     // ------------------------------------------------------------ menu
 
-    /** menu 段没有配（或一个条目都没有）时返回 null —— 调用方据此跳过注册。 */
+    /** Returns null when there are no valid entries; callers skip registration. */
     private static MenuDefinition parseMenu(YamlConfiguration cfg, Consumer<String> warn) {
         List<MenuEntryDefinition> entries = new ArrayList<>();
         for (Map<?, ?> raw : cfg.getMapList("menu.entries")) {
             try {
                 entries.add(parseEntry(raw));
             } catch (Exception ex) {
-                warn.accept("有一个菜单条目解析失败，已跳过：" + ex.getMessage());
+                warn.accept("Skipping a malformed menu entry: " + ex.getMessage());
             }
         }
         if (entries.isEmpty()) {
@@ -87,21 +87,21 @@ public final class MenuConfig {
         return new MenuDefinition(title, button, columns, entries);
     }
 
-    /** 一个条目：label 必须有；url 和 show-rules 二选一（都有的话 url 优先）。 */
+    /** label is required; url and show-rules are mutually exclusive (url wins). */
     private static MenuEntryDefinition parseEntry(Map<?, ?> raw) {
         String label = str(raw, "label", "").trim();
         if (label.isEmpty()) {
-            throw new IllegalArgumentException("缺少 label（按钮上显示的文字）");
+            throw new IllegalArgumentException("missing label (button text)");
         }
         String url = str(raw, "url", "").trim();
         boolean showRules = Boolean.parseBoolean(str(raw, "show-rules", "false").trim());
         if (url.isEmpty() && !showRules) {
-            throw new IllegalArgumentException("条目「" + label + "」既没有 url 也没有 show-rules，不知道点了做什么");
+            throw new IllegalArgumentException("entry '" + label + "' has neither url nor show-rules");
         }
         if (!url.isEmpty()) {
-            URI uri = URI.create(url); // 格式非法会在这里抛 IllegalArgumentException
+            URI uri = URI.create(url); // throws on malformed URLs
             if (uri.getScheme() == null) {
-                throw new IllegalArgumentException("网址「" + url + "」没有协议头（比如 https://）");
+                throw new IllegalArgumentException("URL '" + url + "' has no scheme (e.g. https://)");
             }
         }
         return new MenuEntryDefinition(label, url, showRules);
@@ -109,7 +109,7 @@ public final class MenuConfig {
 
     // ------------------------------------------------------------ rules
 
-    /** rules 段没有配（或 lines 为空）时返回 null。 */
+    /** Returns null if the section is missing or has no lines. */
     private static RulesDefinition parseRules(YamlConfiguration cfg) {
         List<String> lines = cfg.getStringList("rules.lines");
         if (lines.isEmpty()) {
@@ -118,14 +118,14 @@ public final class MenuConfig {
         return new RulesDefinition(cfg.getString("rules.title", DEFAULT_RULES_TITLE), lines);
     }
 
-    // ------------------------------------------------------------ 查询
+    // ------------------------------------------------------------ accessors
 
-    /** @return 菜单页；没有可用条目时返回 null */
+    /** @return menu definition, or null if no valid entries */
     public MenuDefinition menu() {
         return menu;
     }
 
-    /** @return 规则文本；没有配置时返回 null */
+    /** @return rules definition, or null if not configured */
     public RulesDefinition rules() {
         return rules;
     }

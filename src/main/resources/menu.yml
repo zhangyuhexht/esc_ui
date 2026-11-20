@@ -1,17 +1,15 @@
-# ============================================================
-#  EscUI 菜单配置（2.0）
+# EscUI menu config (2.0)
 #
-#  ESC 菜单里「服务器链接」按钮点开后的内容就在 menu.entries 里，
-#  每个条目 = 菜单里的一个按钮（label 按钮文字 / url 点了打开的网址）。
-#  也支持 show-rules: true 显示游戏内文本（需配 rules 段，当前未使用）。
+# menu.entries is the contents of the "Server Links" dialog in the ESC menu.
+# Each entry is one button: label = button text, url = page to open.
+# show-rules: true is also supported to display in-game text (needs a rules section; unused by default).
 #
-#  改完要重启服务端才生效（菜单是启动时注册的）。
-# ============================================================
+# Menu changes take effect after a server restart.
 
 menu:
-  title: "服务器链接"          # 点开后的标题
-  button: "服务器链接"         # ESC 菜单里按钮显示的文字
-  columns: 1                  # 按钮排几列（1~4）
+  title: "服务器链接"          # dialog title
+  button: "服务器链接"         # ESC menu button label
+  columns: 1                  # button columns (1–4)
   entries:
     - label: "服务器官网"
       url: "https://zhangyuhexht.top/"
